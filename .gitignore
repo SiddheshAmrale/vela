@@ -5,3 +5,4 @@
 installer/vela.nsi
 *.log
 Thumbs.db
+/.claude

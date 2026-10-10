@@ -16,6 +16,8 @@ jobs:
         run: |
           rustup toolchain install stable-x86_64-pc-windows-gnu --profile minimal
           rustup default stable-x86_64-pc-windows-gnu
+      - name: NSIS (installer compiler; not preinstalled on the runner image)
+        run: choco install nsis -y --no-progress
       # Optional code signing. Set VELA_SIGN to a command containing {file}, e.g.
       # signtool sign /fd sha256 /tr http://timestamp.acs.microsoft.com /td sha256 /dlib ... /dmdf ... {file}
       - name: Fetch libmpv + assembler, build exe, portable zip and installer
