@@ -1,0 +1,33 @@
+VELA third-party notices
+========================
+
+VELA itself is released under the MIT License (see LICENSE.txt).
+
+libmpv-2.dll
+------------
+VELA plays media through libmpv, the library form of the mpv media player
+(https://mpv.io). The bundled build comes from
+https://github.com/shinchiro/mpv-winbuild-cmake (release 20261010,
+mpv git b2c255c13e) and statically includes FFmpeg, libass, libplacebo and
+other libraries.
+
+This build of libmpv is licensed under the GNU General Public License,
+version 2 or later. Source code for mpv is available at
+https://github.com/mpv-player/mpv and the exact build recipe (including all
+bundled libraries and versions) at
+https://github.com/shinchiro/mpv-winbuild-cmake.
+
+FFmpeg   - https://ffmpeg.org        (GPL/LGPL; see https://ffmpeg.org/legal.html)
+libass   - https://github.com/libass/libass (ISC)
+libplacebo - https://code.videolan.org/videolan/libplacebo (LGPL-2.1+)
+
+Rust crates
+-----------
+winit, glutin, glow, egui, egui-winit, egui_glow, rfd, arboard, dirs, serde,
+serde_json, memmap2, windows-sys, objc2, object and their dependencies are used under the MIT
+and/or Apache-2.0 licenses. See https://crates.io for each crate's license.
+
+Fonts
+-----
+VELA uses the fonts already installed with the operating system; no fonts
+are redistributed (Linux/macOS builds include egui's fallback fonts, OFL).

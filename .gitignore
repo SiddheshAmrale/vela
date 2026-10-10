@@ -1,0 +1,7 @@
+/target
+/dist
+/.tools
+/.cache
+installer/vela.nsi
+*.log
+Thumbs.db

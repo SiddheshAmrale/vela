@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>CFBundleName</key><string>VELA</string>
+  <key>CFBundleDisplayName</key><string>VELA</string>
+  <key>CFBundleIdentifier</key><string>com.velaplayer.vela</string>
+  <key>CFBundleExecutable</key><string>vela</string>
+  <key>CFBundleIconFile</key><string>vela</string>
+  <key>CFBundlePackageType</key><string>APPL</string>
+  <key>CFBundleShortVersionString</key><string>@VERSION@</string>
+  <key>CFBundleVersion</key><string>@VERSION@</string>
+  <key>LSMinimumSystemVersion</key><string>11.0</string>
+  <key>LSApplicationCategoryType</key><string>public.app-category.entertainment</string>
+  <key>NSHighResolutionCapable</key><true/>
+  <key>NSSupportsAutomaticGraphicsSwitching</key><true/>
+  <key>CFBundleDocumentTypes</key>
+  <array>
+    <dict>
+      <key>CFBundleTypeName</key><string>Video</string>
+      <key>CFBundleTypeRole</key><string>Viewer</string>
+      <key>LSHandlerRank</key><string>Alternate</string>
+      <key>LSItemContentTypes</key>
+      <array>
+        <string>public.movie</string>
+        <string>public.video</string>
+        <string>public.audiovisual-content</string>
+        <string>public.mpeg-4</string>
+        <string>com.apple.quicktime-movie</string>
+        <string>public.avi</string>
+        <string>org.matroska.mkv</string>
+        <string>org.webmproject.webm</string>
+      </array>
+      <key>CFBundleTypeExtensions</key>
+      <array>
+        <string>mkv</string><string>webm</string><string>avi</string><string>wmv</string><string>flv</string>
+        <string>ts</string><string>m2ts</string><string>mts</string><string>vob</string><string>ogv</string>
+        <string>rmvb</string><string>divx</string><string>mpg</string><string>mpeg</string><string>3gp</string>
+      </array>
+    </dict>
+    <dict>
+      <key>CFBundleTypeName</key><string>Audio</string>
+      <key>CFBundleTypeRole</key><string>Viewer</string>
+      <key>LSHandlerRank</key><string>Alternate</string>
+      <key>LSItemContentTypes</key>
+      <array>
+        <string>public.audio</string>
+        <string>public.mp3</string>
+        <string>org.xiph.flac</string>
+        <string>public.mpeg-4-audio</string>
+      </array>
+      <key>CFBundleTypeExtensions</key>
+      <array>
+        <string>flac</string><string>opus</string><string>ogg</string><string>ape</string><string>wma</string>
+        <string>mka</string><string>dts</string><string>ac3</string><string>wv</string>
+      </array>
+    </dict>
+  </array>
+</dict>
+</plist>

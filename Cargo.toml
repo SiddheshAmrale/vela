@@ -1,0 +1,78 @@
+[package]
+name = "vela"
+version = "1.0.0"
+edition = "2021"
+description = "VELA - a fast, minimal media player built on libmpv"
+license = "MIT"
+homepage = "https://github.com/vela-player/vela"
+build = "build.rs"
+
+[dependencies]
+winit = { version = "0.30", default-features = false, features = ["rwh_06"] }
+glutin = { version = "0.32", default-features = false }
+glutin-winit = { version = "0.5", default-features = false }
+raw-window-handle = "0.6"
+glow = "0.16"
+egui = { version = "0.31", default-features = false }
+egui-winit = { version = "0.31", default-features = false }
+egui_glow = { version = "0.31", default-features = false }
+rfd = { version = "0.15", default-features = false }
+arboard = { version = "3", default-features = false }
+dirs = "6"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+memmap2 = "0.9"
+
+[target.'cfg(windows)'.dependencies]
+glutin = { version = "0.32", default-features = false, features = ["wgl"] }
+glutin-winit = { version = "0.5", default-features = false, features = ["wgl"] }
+windows-sys = { version = "0.59", features = [
+  "Win32_Foundation",
+  "Win32_Security",
+  "Win32_Storage_FileSystem",
+  "Win32_System_IO",
+  "Win32_System_Pipes",
+  "Win32_System_Power",
+  "Win32_System_ProcessStatus",
+  "Win32_System_Threading",
+  "Win32_UI_WindowsAndMessaging",
+] }
+
+[target.'cfg(target_os = "linux")'.dependencies]
+winit = { version = "0.30", default-features = false, features = ["rwh_06", "x11", "wayland", "wayland-dlopen"] }
+glutin = { version = "0.32", default-features = false, features = ["egl", "glx", "x11", "wayland"] }
+glutin-winit = { version = "0.5", default-features = false, features = ["egl", "glx", "x11", "wayland"] }
+# Last-resort UI font when no known system font is installed.
+egui = { version = "0.31", default-features = false, features = ["default_fonts"] }
+rfd = { version = "0.15", default-features = false, features = ["xdg-portal", "async-std"] }
+
+[target.'cfg(target_os = "macos")'.dependencies]
+# glutin always includes CGL on macOS.
+objc2 = "0.5"
+egui = { version = "0.31", default-features = false, features = ["default_fonts"] }
+
+[build-dependencies]
+object = { version = "0.36", default-features = false, features = ["write", "coff", "std"] }
+
+[profile.release]
+opt-level = 3
+lto = "fat"
+codegen-units = 1
+panic = "abort"
+strip = true
+
+[profile.dev.package."*"]
+opt-level = 2
+
+# `cargo deb` (Linux): libmpv comes from the distribution.
+[package.metadata.deb]
+name = "vela"
+maintainer = "VELA contributors"
+section = "video"
+depends = "$auto, libmpv2 | libmpv1"
+extended-description = "Fast, minimal media player that plays virtually every format, built on libmpv."
+assets = [
+  ["target/release/vela", "usr/bin/", "755"],
+  ["packaging/linux/vela.desktop", "usr/share/applications/", "644"],
+  ["build/icon.png", "usr/share/icons/hicolor/1024x1024/apps/vela.png", "644"],
+]

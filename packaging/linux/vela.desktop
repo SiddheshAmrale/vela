@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Name=VELA
+GenericName=Media Player
+Comment=Play anything, beautifully
+Exec=vela %U
+Icon=vela
+Terminal=false
+Categories=AudioVideo;Video;Audio;Player;
+Keywords=video;movie;music;player;mkv;mp4;
+StartupWMClass=vela
+MimeType=video/mp4;video/x-matroska;video/webm;video/x-msvideo;video/quicktime;video/x-ms-wmv;video/x-flv;video/mpeg;video/mp2t;video/3gpp;video/3gpp2;video/ogg;video/x-ogm+ogg;video/x-m4v;video/vnd.avi;video/avi;video/divx;video/x-ms-asf;video/vnd.rn-realvideo;video/dv;video/x-theora+ogg;audio/mpeg;audio/flac;audio/x-flac;audio/wav;audio/x-wav;audio/aac;audio/mp4;audio/x-m4a;audio/ogg;audio/opus;audio/x-ms-wma;audio/x-aiff;audio/x-ape;audio/ac3;audio/x-matroska;audio/x-wavpack;audio/x-mpegurl;application/x-mpegurl;audio/x-scpls;inode/directory;

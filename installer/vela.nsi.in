@@ -1,0 +1,191 @@
+; VELA installer (NSIS 3, Unicode, per-user - no admin rights needed)
+; Generated into vela.nsi by scripts/gen_installer.py - edit this file.
+;
+; Registers VELA with Windows the supported way:
+;   * ProgIDs + OpenWithProgids   -> listed under "Open with" for every media type
+;   * SystemFileAssociations verb -> "Play with VELA" in the right-click menu
+;   * Directory verb              -> "Play with VELA" on folders
+;   * Capabilities + RegisteredApplications -> selectable in Settings > Default apps
+; Windows 10/11 deliberately do not let installers force a default player, so
+; the finish page offers to open the Default apps page instead.
+
+Unicode true
+SetCompressor /SOLID lzma
+SetCompressorDictSize 64
+RequestExecutionLevel user
+ManifestDPIAware true
+
+!ifndef VERSION
+  !define VERSION "1.0.0"
+!endif
+!ifndef STAGE
+  !define STAGE "..\dist\stage"
+!endif
+!ifndef OUTFILE
+  !define OUTFILE "..\dist\VELA-Setup-${VERSION}.exe"
+!endif
+
+!define APP "VELA"
+!define EXE "Vela.exe"
+!define PROGID_V "Vela.Video"
+!define PROGID_A "Vela.Audio"
+!define UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP}"
+!define CAPS "Software\${APP}\Capabilities"
+
+Name "${APP}"
+OutFile "${OUTFILE}"
+InstallDir "$LOCALAPPDATA\Programs\${APP}"
+InstallDirRegKey HKCU "Software\${APP}" "InstallDir"
+BrandingText "${APP} ${VERSION}"
+VIProductVersion "${VERSION}.0"
+VIAddVersionKey "ProductName" "${APP}"
+VIAddVersionKey "FileDescription" "${APP} Setup"
+VIAddVersionKey "FileVersion" "${VERSION}"
+VIAddVersionKey "ProductVersion" "${VERSION}"
+VIAddVersionKey "LegalCopyright" "MIT License"
+
+!include "MUI2.nsh"
+!include "FileFunc.nsh"
+
+!define MUI_ICON "..\build\icon.ico"
+!define MUI_UNICON "..\build\icon.ico"
+!define MUI_ABORTWARNING
+!define MUI_FINISHPAGE_RUN "$INSTDIR\${EXE}"
+!define MUI_FINISHPAGE_RUN_TEXT "Launch VELA"
+!define MUI_FINISHPAGE_SHOWREADME ""
+!define MUI_FINISHPAGE_SHOWREADME_TEXT "Make VELA my default player (opens Windows Settings)"
+!define MUI_FINISHPAGE_SHOWREADME_FUNCTION OpenDefaultApps
+!define MUI_FINISHPAGE_SHOWREADME_NOTCHECKED
+
+!insertmacro MUI_PAGE_WELCOME
+!insertmacro MUI_PAGE_DIRECTORY
+!insertmacro MUI_PAGE_COMPONENTS
+!insertmacro MUI_PAGE_INSTFILES
+!insertmacro MUI_PAGE_FINISH
+!insertmacro MUI_UNPAGE_CONFIRM
+!insertmacro MUI_UNPAGE_INSTFILES
+!insertmacro MUI_LANGUAGE "English"
+
+Function OpenDefaultApps
+  ExecShell "open" "ms-settings:defaultapps?registeredAppUser=${APP}"
+FunctionEnd
+
+; ---- per-extension registration ------------------------------------------
+!macro AssocCommon EXT PROGID
+  WriteRegStr HKCU "Software\Classes\.${EXT}\OpenWithProgids" "${PROGID}" ""
+  WriteRegStr HKCU "Software\Classes\Applications\${EXE}\SupportedTypes" ".${EXT}" ""
+  WriteRegStr HKCU "${CAPS}\FileAssociations" ".${EXT}" "${PROGID}"
+  WriteRegStr HKCU "Software\Classes\SystemFileAssociations\.${EXT}\shell\${APP}.Play" "" "Play with VELA"
+  WriteRegStr HKCU "Software\Classes\SystemFileAssociations\.${EXT}\shell\${APP}.Play" "Icon" '"$INSTDIR\${EXE}",0'
+  WriteRegStr HKCU "Software\Classes\SystemFileAssociations\.${EXT}\shell\${APP}.Play" "MultiSelectModel" "Player"
+  WriteRegStr HKCU "Software\Classes\SystemFileAssociations\.${EXT}\shell\${APP}.Play\command" "" '"$INSTDIR\${EXE}" "%1"'
+!macroend
+!macro AssocVideo EXT
+  !insertmacro AssocCommon "${EXT}" "${PROGID_V}"
+!macroend
+!macro AssocAudio EXT
+  !insertmacro AssocCommon "${EXT}" "${PROGID_A}"
+!macroend
+!macro UnAssoc EXT
+  DeleteRegValue HKCU "Software\Classes\.${EXT}\OpenWithProgids" "${PROGID_V}"
+  DeleteRegValue HKCU "Software\Classes\.${EXT}\OpenWithProgids" "${PROGID_A}"
+  DeleteRegKey /ifempty HKCU "Software\Classes\.${EXT}\OpenWithProgids"
+  DeleteRegKey HKCU "Software\Classes\SystemFileAssociations\.${EXT}\shell\${APP}.Play"
+!macroend
+
+!macro ProgId PROGID DESC
+  WriteRegStr HKCU "Software\Classes\${PROGID}" "" "${DESC}"
+  WriteRegStr HKCU "Software\Classes\${PROGID}" "FriendlyTypeName" "${DESC}"
+  WriteRegStr HKCU "Software\Classes\${PROGID}\DefaultIcon" "" '"$INSTDIR\${EXE}",0'
+  WriteRegStr HKCU "Software\Classes\${PROGID}\shell" "" "open"
+  WriteRegStr HKCU "Software\Classes\${PROGID}\shell\open" "FriendlyAppName" "${APP}"
+  WriteRegStr HKCU "Software\Classes\${PROGID}\shell\open\command" "" '"$INSTDIR\${EXE}" "%1"'
+!macroend
+
+Section "VELA (required)" SecCore
+  SectionIn RO
+  ; Close a running instance so files can be replaced
+  nsExec::Exec 'taskkill /IM ${EXE} /F'
+  SetOutPath "$INSTDIR"
+  File "${STAGE}\${EXE}"
+  File "${STAGE}\libmpv-2.dll"
+  File "${STAGE}\LICENSE.txt"
+  File "${STAGE}\THIRD-PARTY-NOTICES.txt"
+  WriteUninstaller "$INSTDIR\Uninstall.exe"
+
+  WriteRegStr HKCU "Software\${APP}" "InstallDir" "$INSTDIR"
+
+  ; App registration (App Paths makes Win+R "vela" work too)
+  WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\App Paths\${EXE}" "" "$INSTDIR\${EXE}"
+  WriteRegStr HKCU "Software\Classes\Applications\${EXE}" "FriendlyAppName" "${APP}"
+  WriteRegStr HKCU "Software\Classes\Applications\${EXE}\DefaultIcon" "" '"$INSTDIR\${EXE}",0'
+  WriteRegStr HKCU "Software\Classes\Applications\${EXE}\shell\open\command" "" '"$INSTDIR\${EXE}" "%1"'
+
+  !insertmacro ProgId "${PROGID_V}" "Video file"
+  !insertmacro ProgId "${PROGID_A}" "Audio file"
+
+  WriteRegStr HKCU "${CAPS}" "ApplicationName" "${APP}"
+  WriteRegStr HKCU "${CAPS}" "ApplicationDescription" "Fast, minimal media player that plays virtually every format."
+  WriteRegStr HKCU "${CAPS}" "ApplicationIcon" '"$INSTDIR\${EXE}",0'
+  WriteRegStr HKCU "Software\RegisteredApplications" "${APP}" "${CAPS}"
+
+;@ASSOC@
+
+  ; Folders: "Play with VELA" plays everything inside as a playlist
+  WriteRegStr HKCU "Software\Classes\Directory\shell\${APP}.Play" "" "Play with VELA"
+  WriteRegStr HKCU "Software\Classes\Directory\shell\${APP}.Play" "Icon" '"$INSTDIR\${EXE}",0'
+  WriteRegStr HKCU "Software\Classes\Directory\shell\${APP}.Play\command" "" '"$INSTDIR\${EXE}" "%1"'
+
+  CreateShortCut "$SMPROGRAMS\${APP}.lnk" "$INSTDIR\${EXE}" "" "$INSTDIR\${EXE}" 0
+
+  ; Add/Remove Programs
+  ${GetSize} "$INSTDIR" "/S=0K" $0 $1 $2
+  IntFmt $0 "0x%08X" $0
+  WriteRegStr HKCU "${UNINST_KEY}" "DisplayName" "${APP}"
+  WriteRegStr HKCU "${UNINST_KEY}" "DisplayVersion" "${VERSION}"
+  WriteRegStr HKCU "${UNINST_KEY}" "Publisher" "${APP}"
+  WriteRegStr HKCU "${UNINST_KEY}" "DisplayIcon" '"$INSTDIR\${EXE}",0'
+  WriteRegStr HKCU "${UNINST_KEY}" "InstallLocation" "$INSTDIR"
+  WriteRegStr HKCU "${UNINST_KEY}" "UninstallString" '"$INSTDIR\Uninstall.exe"'
+  WriteRegStr HKCU "${UNINST_KEY}" "QuietUninstallString" '"$INSTDIR\Uninstall.exe" /S'
+  WriteRegDWORD HKCU "${UNINST_KEY}" "EstimatedSize" $0
+  WriteRegDWORD HKCU "${UNINST_KEY}" "NoModify" 1
+  WriteRegDWORD HKCU "${UNINST_KEY}" "NoRepair" 1
+
+  ; Tell Explorer the associations changed (SHCNE_ASSOCCHANGED)
+  System::Call 'shell32::SHChangeNotify(i 0x08000000, i 0, p 0, p 0)'
+SectionEnd
+
+Section "Desktop shortcut" SecDesktop
+  CreateShortCut "$DESKTOP\${APP}.lnk" "$INSTDIR\${EXE}" "" "$INSTDIR\${EXE}" 0
+SectionEnd
+
+LangString DESC_Core ${LANG_ENGLISH} "The player, plus Open with and right-click menu integration."
+LangString DESC_Desktop ${LANG_ENGLISH} "Put a VELA icon on the desktop."
+!insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
+  !insertmacro MUI_DESCRIPTION_TEXT ${SecCore} $(DESC_Core)
+  !insertmacro MUI_DESCRIPTION_TEXT ${SecDesktop} $(DESC_Desktop)
+!insertmacro MUI_FUNCTION_DESCRIPTION_END
+
+Section "Uninstall"
+  nsExec::Exec 'taskkill /IM ${EXE} /F'
+;@UNASSOC@
+  DeleteRegKey HKCU "Software\Classes\Directory\shell\${APP}.Play"
+  DeleteRegKey HKCU "Software\Classes\${PROGID_V}"
+  DeleteRegKey HKCU "Software\Classes\${PROGID_A}"
+  DeleteRegKey HKCU "Software\Classes\Applications\${EXE}"
+  DeleteRegKey HKCU "Software\Microsoft\Windows\CurrentVersion\App Paths\${EXE}"
+  DeleteRegValue HKCU "Software\RegisteredApplications" "${APP}"
+  DeleteRegKey HKCU "Software\${APP}"
+  DeleteRegKey HKCU "${UNINST_KEY}"
+
+  Delete "$SMPROGRAMS\${APP}.lnk"
+  Delete "$DESKTOP\${APP}.lnk"
+  Delete "$INSTDIR\${EXE}"
+  Delete "$INSTDIR\libmpv-2.dll"
+  Delete "$INSTDIR\LICENSE.txt"
+  Delete "$INSTDIR\THIRD-PARTY-NOTICES.txt"
+  Delete "$INSTDIR\Uninstall.exe"
+  RMDir "$INSTDIR"
+  System::Call 'shell32::SHChangeNotify(i 0x08000000, i 0, p 0, p 0)'
+SectionEnd
